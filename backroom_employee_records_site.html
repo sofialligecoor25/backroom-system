@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backroom Information for DIMAK Employee</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+font-family: Calibri, Arial, sans-serif;
+margin:0;
+background:#fff5f5;
+}
+
+header{
+background:#ff4d4d;
+color:white;
+padding:15px;
+font-weight:bold;
+font-size:22px;
+text-align:center;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:10px;
+margin-bottom:20px;
+box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+h2{
+color:#ff4d4d;
+font-weight:bold;
+}
+
+label{
+font-weight:bold;
+}
+
+input, textarea, select{
+width:100%;
+padding:8px;
+margin-top:5px;
+margin-bottom:12px;
+border:1px solid #ccc;
+border-radius:5px;
+font-family:Calibri;
+}
+
+button{
+background:#ff4d4d;
+color:white;
+border:none;
+padding:10px 20px;
+border-radius:5px;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+background:#e63939;
+}
+
+.employee{
+border:1px solid #eee;
+padding:15px;
+border-radius:10px;
+margin-top:15px;
+display:flex;
+gap:20px;
+}
+
+.employee img{
+width:100px;
+height:100px;
+object-fit:cover;
+border-radius:10px;
+border:2px solid #ff4d4d;
+}
+
+.login-box{
+max-width:400px;
+margin:120px auto;
+background:white;
+padding:30px;
+border-radius:10px;
+box-shadow:0 2px 10px rgba(0,0,0,0.2);
+}
+
+.hidden{display:none}
+
+.search-box{
+margin-bottom:15px;
+}
+
+small{color:gray}
+</style>
+</head>
+<body>
+
+<header>
+Backroom Information for DIMAK Employee
+<br>
+<small>Agency Coordinator: sofi.ncl_coor</small>
+</header>
+
+<div id="loginPage" class="login-box">
+<h2>Admin Login</h2>
+<label>Username</label>
+<input type="text" id="username">
+
+<label>Password</label>
+<input type="password" id="password">
+
+<button onclick="login()">Login</button>
+
+<p id="loginMsg" style="color:red"></p>
+</div>
+
+<div id="system" class="hidden">
+
+<div class="container">
+
+<div class="card">
+<h2>Add Backroom Employee</h2>
+
+<label>Upload Photo</label>
+<input type="file" id="photo">
+
+<label>Full Name</label>
+<input type="text" id="name">
+
+<label>OPS ID</label>
+<input type="text" id="opsid">
+
+<label>Position</label>
+<input type="text" id="position">
+
+<label>Date Hired</label>
+<input type="date" id="datehired">
+
+<label>Educational Background</label>
+<textarea id="education"></textarea>
+
+<label>Government Mandatory Information</label>
+<textarea id="gov"></textarea>
+
+<label>Personal Background</label>
+<textarea id="background"></textarea>
+
+<label>Attendance (Current Cutoff)</label>
+<select id="attendance">
+<option>Complete</option>
+<option>With Absences</option>
+<option>On Leave</option>
+</select>
+
+<button onclick="saveEmployee()">Save Employee</button>
+
+</div>
+
+<div class="card">
+<h2>Search Employee</h2>
+<input class="search-box" type="text" id="search" placeholder="Search name or OPS ID" onkeyup="searchEmployee()">
+
+<div id="employeeList"></div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+const adminUser = "sofi.ncl_coor";
+let adminPass = localStorage.getItem("adminPass");
+
+if(!adminPass){
+adminPass = prompt("Create your admin password:");
+localStorage.setItem("adminPass", adminPass);
+}
+
+function login(){
+let u=document.getElementById("username").value;
+let p=document.getElementById("password").value;
+
+if(u===adminUser && p===adminPass){
+
+document.getElementById("loginPage").classList.add("hidden");
+document.getElementById("system").classList.remove("hidden");
+loadEmployees();
+
+}else{
+
+document.getElementById("loginMsg").innerText="Invalid login";
+}
+}
+
+function saveEmployee(){
+
+let name=document.getElementById("name").value;
+let opsid=document.getElementById("opsid").value;
+let position=document.getElementById("position").value;
+let datehired=document.getElementById("datehired").value;
+let education=document.getElementById("education").value;
+let gov=document.getElementById("gov").value;
+let background=document.getElementById("background").value;
+let attendance=document.getElementById("attendance").value;
+
+let photoInput=document.getElementById("photo").files[0];
+
+let reader=new FileReader();
+
+reader.onload=function(e){
+
+let photo=e.target.result;
+
+let employee={
+name,opsid,position,datehired,education,gov,background,attendance,photo
+};
+
+let list=JSON.parse(localStorage.getItem("employees")||"[]");
+list.push(employee);
+
+localStorage.setItem("employees",JSON.stringify(list));
+
+loadEmployees();
+
+alert("Employee Saved Successfully");
+}
+
+if(photoInput){
+reader.readAsDataURL(photoInput);
+}
+
+}
+
+function loadEmployees(){
+
+let list=JSON.parse(localStorage.getItem("employees")||"[]");
+let container=document.getElementById("employeeList");
+
+container.innerHTML="";
+
+list.forEach(e=>{
+
+container.innerHTML+=`
+<div class="employee">
+<img src="${e.photo}">
+<div>
+<b>${e.name}</b><br>
+OPS ID: ${e.opsid}<br>
+Position: ${e.position}<br>
+Date Hired: ${e.datehired}<br>
+Attendance: ${e.attendance}
+</div>
+</div>
+`;
+
+});
+
+}
+
+function searchEmployee(){
+
+let keyword=document.getElementById("search").value.toLowerCase();
+let list=JSON.parse(localStorage.getItem("employees")||"[]");
+
+let filtered=list.filter(e=>
+ e.name.toLowerCase().includes(keyword) || e.opsid.toLowerCase().includes(keyword)
+);
+
+let container=document.getElementById("employeeList");
+
+container.innerHTML="";
+
+filtered.forEach(e=>{
+
+container.innerHTML+=`
+<div class="employee">
+<img src="${e.photo}">
+<div>
+<b>${e.name}</b><br>
+OPS ID: ${e.opsid}<br>
+Position: ${e.position}<br>
+Date Hired: ${e.datehired}<br>
+Attendance: ${e.attendance}
+</div>
+</div>
+`;
+
+});
+
+}
+</script>
+
+</body>
+</html>
